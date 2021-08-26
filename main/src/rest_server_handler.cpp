@@ -1,22 +1,22 @@
 #include "../include/rest_server_handler.hpp"
 
-#define TAG "Rest server handler"
-
-#define FILE_BUF_SIZE 256
-
-#define FORWARD_URI "/Forward"
-#define ROOT_URI "/*"
-#define PWM_URI "/PWM/*"
-#define BACKWARD_URI "/Backward"
-#define CLOCKWISE_URI "/Clockwise"
-#define COUNTERCLOCKWISE_URI "/Counterclockwise"
-#define STOP_URI "/Stop"
+#define TAG                     "Rest server handler"
+#define FILE_BUF_SIZE           256
+#define FORWARD_URI             "/Forward"
+#define ROOT_URI                "/*"
+#define PWM_URI                 "/PWM/*"
+#define BACKWARD_URI            "/Backward"
+#define CLOCKWISE_URI           "/Clockwise"
+#define COUNTERCLOCKWISE_URI    "/Counterclockwise"
+#define STOP_URI                "/Stop"
+#define NULL_CTX                (void*)0
 
 #define SEND_OK(req) do { \
     std::stringstream message; \
     message << "{\"" << req->uri << "\": \"ok\"}"; \
     std::string m = message.str(); \
     httpd_resp_send(req, m.c_str(), m.length()); \
+    return ESP_OK; \
 } while(0) \
 
 #define CHECK_FILE_EXTENSION(str, ext) (str.substr(str.find_last_of(".") + 1) == ext)
@@ -28,7 +28,7 @@ void register_callbacks(httpd_handle_t * server) {
             .uri = ROOT_URI,
             .method = HTTP_GET,
             .handler = root_handler,
-            .user_ctx = (void*)0
+            .user_ctx = NULL_CTX
         };
 
     httpd_uri_t pwm =
@@ -36,7 +36,7 @@ void register_callbacks(httpd_handle_t * server) {
             .uri = PWM_URI,
             .method = HTTP_POST,
             .handler = pwm_handler,
-            .user_ctx = (void*)0
+            .user_ctx = NULL_CTX
         };
 
 
@@ -45,7 +45,7 @@ void register_callbacks(httpd_handle_t * server) {
             .uri = FORWARD_URI,
             .method = HTTP_POST,
             .handler = forward_handler,
-            .user_ctx = (void*)0
+            .user_ctx = NULL_CTX
         };
 
     httpd_uri_t back = 
@@ -53,7 +53,7 @@ void register_callbacks(httpd_handle_t * server) {
             .uri = BACKWARD_URI,
             .method = HTTP_POST,
             .handler = backward_handler,
-            .user_ctx = (void*)0
+            .user_ctx = NULL_CTX
         };
 
     httpd_uri_t left = 
@@ -61,7 +61,7 @@ void register_callbacks(httpd_handle_t * server) {
             .uri = COUNTERCLOCKWISE_URI,
             .method = HTTP_POST,
             .handler = left_handler,
-            .user_ctx = (void*)0
+            .user_ctx = NULL_CTX
         };
 
     httpd_uri_t right =
@@ -69,7 +69,7 @@ void register_callbacks(httpd_handle_t * server) {
             .uri = CLOCKWISE_URI,
             .method = HTTP_POST,
             .handler = right_handler,
-            .user_ctx = (void*)0
+            .user_ctx = NULL_CTX
         };
 
     httpd_uri_t stop =
@@ -77,7 +77,7 @@ void register_callbacks(httpd_handle_t * server) {
             .uri = STOP_URI,
             .method = HTTP_POST,
             .handler = stop_handler,
-            .user_ctx = (void*)0
+            .user_ctx = NULL_CTX
         };
 
     httpd_register_uri_handler(*server, &root);
@@ -100,34 +100,26 @@ void register_callbacks(httpd_handle_t * server) {
 esp_err_t right_handler(httpd_req_t *req) {
     Driver::clockwise();
     SEND_OK(req);
-    return ESP_OK;
 }
 
 esp_err_t left_handler(httpd_req_t *req) {
     Driver::counterclockwise();
     SEND_OK(req);
-    return ESP_OK;
-
 }
 
 esp_err_t stop_handler(httpd_req_t *req) {
     Driver::stop();
     SEND_OK(req);
-    return ESP_OK;
-
 }
 
 esp_err_t forward_handler(httpd_req_t *req) {
     Driver::forward();
     SEND_OK(req);
-    return ESP_OK;
-
 }
 
 esp_err_t backward_handler(httpd_req_t *req) {
     Driver::backward();
     SEND_OK(req);
-    return ESP_OK;
 }
 
 esp_err_t set_content_type_from_file(httpd_req_t *req, std::string filepath)
@@ -169,7 +161,6 @@ esp_err_t pwm_handler(httpd_req_t * req) {
     ESP_LOGI(TAG, "changed duty cycle to %.2f percent", duty_cycle_percentage );
 
     SEND_OK(req);
-    return ESP_OK;
 }
 
 
@@ -190,9 +181,7 @@ esp_err_t root_handler(httpd_req_t *req)
     ESP_LOGI(TAG, "file path = %s", file_path.c_str());
 
     set_content_type_from_file(req, file_path);
-
     char lineRead[FILE_BUF_SIZE];
-    
     FILE *file = fopen(file_path.c_str(), "r");
     while (fgets(lineRead, sizeof(lineRead), file))
     {
