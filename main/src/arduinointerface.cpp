@@ -36,12 +36,12 @@ void ArduinoInterface::setup(void) {
 
     ESP_LOGI(AI_LOG_TAG, "All motor pins set successfully");
 
-    ledc_timer_config_t ledc_timer = {};
-    ledc_timer.speed_mode             = LEDC_MODE;
-    ledc_timer.timer_num              = LEDC_TIMER;
-    ledc_timer.duty_resolution        = LEDC_DUTY_RES;
-    ledc_timer.freq_hz                = LEDC_FREQUENCY;
-    ledc_timer.clk_cfg                = LEDC_AUTO_CLK;
+    ledc_timer_config_t ledc_timer;
+    ledc_timer.speed_mode           = LEDC_MODE;
+    ledc_timer.timer_num            = LEDC_TIMER;
+    ledc_timer.duty_resolution      = LEDC_DUTY_RES;
+    ledc_timer.freq_hz              = LEDC_FREQUENCY;
+    ledc_timer.clk_cfg              = LEDC_AUTO_CLK;
 
     ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
 
