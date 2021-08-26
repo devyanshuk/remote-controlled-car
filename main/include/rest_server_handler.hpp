@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <sstream>
 #include <esp_log.h>
 #include <driver/ledc.h>
 #include <esp_http_server.h>

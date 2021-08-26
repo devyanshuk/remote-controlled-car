@@ -2,6 +2,8 @@
 
 #define TAG "Rest server handler"
 
+#define FILE_BUF_SIZE 256
+
 #define FORWARD_URI "/Forward"
 #define ROOT_URI "/*"
 #define PWM_URI "/PWM/*"
@@ -10,6 +12,14 @@
 #define COUNTERCLOCKWISE_URI "/Counterclockwise"
 #define STOP_URI "/Stop"
 
+#define SEND_OK(req) do { \
+    std::stringstream message; \
+    message << "{\"" << req->uri << "\": \"ok\"}"; \
+    std::string m = message.str(); \
+    httpd_resp_send(req, m.c_str(), m.length()); \
+} while(0) \
+
+#define CHECK_FILE_EXTENSION(str, ext) (str.substr(str.find_last_of(".") + 1) == ext)
 
 void register_callbacks(httpd_handle_t * server) {
 
@@ -87,52 +97,38 @@ void register_callbacks(httpd_handle_t * server) {
     
 }
 
-#define SEND_OK(req) { \
-    std::stringstream message; \
-    message << "{\"" << req->uri << "\": \"ok\"}"; \
-    std::string m = message.str(); \
-    httpd_resp_send(req, m.c_str(), m.length()); \
-} \
-
 esp_err_t right_handler(httpd_req_t *req) {
     Driver::clockwise();
-    char *message = "{\"Anticlockwise\": \"ok\"}";
-    httpd_resp_send(req, message, strlen(message));
+    SEND_OK(req);
     return ESP_OK;
 }
 
 esp_err_t left_handler(httpd_req_t *req) {
     Driver::counterclockwise();
-    char *message = "{\"Anticlockwise\": \"ok\"}";
-    httpd_resp_send(req, message, strlen(message));
+    SEND_OK(req);
     return ESP_OK;
 
 }
 
 esp_err_t stop_handler(httpd_req_t *req) {
     Driver::stop();
-    char *message = "{\"Stop\": \"ok\"}";
-    httpd_resp_send(req, message, strlen(message));
+    SEND_OK(req);
     return ESP_OK;
 
 }
 
 esp_err_t forward_handler(httpd_req_t *req) {
     Driver::forward();
-    char *message = "{\"Forward\": \"ok\"}";
-    httpd_resp_send(req, message, strlen(message));
+    SEND_OK(req);
     return ESP_OK;
 
 }
 
 esp_err_t backward_handler(httpd_req_t *req) {
     Driver::backward();
-    char *message = "{\"Backward\": \"ok\"}";
-    httpd_resp_send(req, message, strlen(message));
+    SEND_OK(req);
     return ESP_OK;
 }
-
-#define CHECK_FILE_EXTENSION(str, ext) (str.substr(str.find_last_of(".") + 1) == ext)
 
 esp_err_t set_content_type_from_file(httpd_req_t *req, std::string filepath)
 {
@@ -172,8 +168,7 @@ esp_err_t pwm_handler(httpd_req_t * req) {
 
     ESP_LOGI(TAG, "changed duty cycle to %.2f percent", duty_cycle_percentage );
 
-    char *message = "{\"PWM\": \"ok\"}";
-    httpd_resp_send(req, message, strlen(message));
+    SEND_OK(req);
     return ESP_OK;
 }
 
@@ -196,7 +191,7 @@ esp_err_t root_handler(httpd_req_t *req)
 
     set_content_type_from_file(req, file_path);
 
-    char lineRead[256];
+    char lineRead[FILE_BUF_SIZE];
     
     FILE *file = fopen(file_path.c_str(), "r");
     while (fgets(lineRead, sizeof(lineRead), file))
