@@ -6,4 +6,4 @@ set(COMPONENT_ADD_INCLUDEDIRS "." "include/")
 
 register_component()
 
-spiffs_create_partition_image(spiffs ../UI FLASH_IN_PROJECT)
+spiffs_create_partition_image(UI ../UI FLASH_IN_PROJECT)

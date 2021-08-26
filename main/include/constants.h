@@ -22,7 +22,7 @@ constexpr gpio_num_t ENABLE_MOTOR_B = GPIO_NUM_14;
 #define WIFI_SSID "Remote-controlled-car"
 
 // file partition root
-#define SPIFFS_ROOT "/spiffs"
+#define SPIFFS_ROOT "/UI"
 
 
 #endif
