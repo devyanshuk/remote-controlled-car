@@ -144,14 +144,14 @@ esp_err_t pwm_handler(httpd_req_t * req) {
     ESP_LOGI(TAG, "URI %s was hit", req->uri);
 
     std::string str(req->uri);
-    size_t i = 0;
-    
+
     // Parse: /PWM/integer -> integer
-    for ( ; i < str.length(); i++ ){ if ( isdigit(str[i]) ) break; }
+    size_t i = 0;
+    for ( ; i < str.length() && !isdigit(str[i]) ; i++ );
     str = str.substr(i, str.length() - i );
     int pwm_val = atoi(str.c_str());
 
-    ESP_LOGI(TAG, "got pwm value : %d", pwm_val);
+    ESP_LOGI(TAG, "got duty cycle value : %d", pwm_val);
 
     // set new duty cycle
     float duty_cycle_percentage = (pwm_val / 255.0) * 100.0;
