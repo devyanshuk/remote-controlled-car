@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title> Remote controlled car UI </title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" href="data:,">
+</head>
+<body>
+<script src="script.js"></script>
+<div class="names">
+    <div class="PWM">PWM</div>
+</div>
+<br />
+<div>
+  <input type="range" id="pwm" min="200" max="255" value="255">
+  <button onmousedown="send_pwm()" ontouchstart="send_pwm()">Send PWM</button>
+</div>
+<br />
+<br />
+<div class="keys">
+  <div class="up arr" onmousedown="onUpMouseDown()" onmouseup="onUpMouseUp()" ontouchstart="onUpMouseDown()" ontouchend="onUpMouseUp()"><i class="arrow arrow_up"></i></div>
+  <br />
+  <div class="left arr" onmousedown="onLeftMouseDown()" onmouseup="onLeftMouseUp()" ontouchstart="onLeftMouseDown()" ontouchend="onLeftMouseUp()"><i class="arrow arrow_left"></i></div>  
+  <div class="down arr" onmousedown="onDownMouseDown()" onmouseup="onDownMouseUp()" ontouchstart="onDownMouseDown()" ontouchend="onDownMouseUp()"><i class="arrow arrow_down"></i></div>
+  <div class="right arr" onmousedown="onRightMouseDown()" onmouseup="onRightMouseUp()" ontouchstart="onRightMouseDown()" ontouchend="onRightMouseUp()"><i class="arrow arrow_right"></i></div>
+</div>
+<br />
+<br />
+<br />
+<div class="names">
+  <div class="uptext"></div>
+  <div class="downtext"></div>
+  <div class="lefttext"></div>
+  <div class="righttext"></div>
+</div>
+</body>
+</html>
