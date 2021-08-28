@@ -5,8 +5,8 @@
 #include "freertos/task.h"
 
 #include "wifi.hpp"
+#include "servo.hpp"
 #include "driver.hpp"
-#include "driver/ledc.h"
 #include "constants.h"
 #include "errormacros.hpp"
 

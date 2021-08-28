@@ -1,4 +1,8 @@
 #include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_system.h"
+#include "include/autonomous.hpp"
 
 #include "include/arduinointerface.hpp"
 
@@ -12,4 +16,6 @@ void app_main(void)
   ArduinoInterface a;
   a.setup();
   a.loop();
+
+  start_autonomous_movement();
 }

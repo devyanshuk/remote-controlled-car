@@ -34,6 +34,12 @@ void ArduinoInterface::setup(void) {
     gpio_pad_select_gpio(MOTOR_4_PIN);
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_4_PIN, GPIO_MODE_OUTPUT));
 
+    gpio_pad_select_gpio(ULTRA_ECHO_PIN);
+    ESP_ERROR_CHECK(gpio_set_direction(ULTRA_ECHO_PIN, GPIO_MODE_INPUT));
+
+    gpio_pad_select_gpio(ULTRA_TRIG_PIN);
+    ESP_ERROR_CHECK(gpio_set_direction(ULTRA_TRIG_PIN, GPIO_MODE_OUTPUT));
+
     ESP_LOGI(AI_LOG_TAG, "All motor pins set successfully");
 
     ledc_timer_config_t ledc_timer;
@@ -71,6 +77,8 @@ void ArduinoInterface::setup(void) {
 
     ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, LEDC_DUTY));
     ESP_LOGI(AI_LOG_TAG, "Enabled PWM on Enable A and B pins with duty cycle %.2f percentage", (LEDC_DUTY/(1 << 8)) * 100.0);
+
+    init_servo();
 
     connect_wifi();
 

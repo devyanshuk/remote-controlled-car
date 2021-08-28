@@ -50,9 +50,9 @@ void Driver::clockwise() {
 
     set_motors((MotorOutputValues)
                 {
-                    .motor1 = 0,
-                    .motor2 = 1,
-                    .motor3 = 0,
+                    .motor1 = 1,
+                    .motor2 = 0,
+                    .motor3 = 1,
                     .motor4 = 0
                 });
 }
@@ -63,8 +63,8 @@ void Driver::counterclockwise() {
     set_motors((MotorOutputValues)
                 {
                     .motor1 = 0,
-                    .motor2 = 0,
-                    .motor3 = 1,
-                    .motor4 = 0
+                    .motor2 = 1,
+                    .motor3 = 0,
+                    .motor4 = 1
                 });
 }
