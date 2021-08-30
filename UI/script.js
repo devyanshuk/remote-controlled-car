@@ -148,3 +148,22 @@ function send_pwm() {
                     method: "POST"
                 });
 }
+
+function auto_drive() {
+    fetch("Autodrive/" + (document.getElementById("togBtn").checked).toString(),
+            {
+                method: "POST"
+            });
+}
+
+
+setInterval(function ( ) {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.querySelector(".names .distance").innerHTML = "Obstacle distance: " + this.responseText + " cm";
+    }
+  };
+  xhttp.open("GET", "/Distance", true);
+  xhttp.send();
+}, 1000 ) ;

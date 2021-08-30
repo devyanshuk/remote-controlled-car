@@ -1,7 +1,7 @@
 #include <esp_log.h>
 #include <esp_spiffs.h>
 
-#include "../include/constants.h"
+#include "../include/config/spiffs_config.hpp"
 
 #define TAG "spiffs"
 

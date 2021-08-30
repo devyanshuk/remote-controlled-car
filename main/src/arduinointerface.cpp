@@ -2,14 +2,6 @@
 
 #define AI_LOG_TAG "ArduinoInterface"
 
-#define LEDC_TIMER              LEDC_TIMER_0
-#define LEDC_MODE               LEDC_LOW_SPEED_MODE
-#define LEDC_CHANNEL            LEDC_CHANNEL_0
-#define LEDC_DUTY_RES           LEDC_TIMER_8_BIT
-#define LEDC_DUTY               (255)
-#define LEDC_FREQUENCY          (20000)
-
-
 ArduinoInterface::ArduinoInterface(){}
 
 void ArduinoInterface::setup(void) {
@@ -76,7 +68,7 @@ void ArduinoInterface::setup(void) {
     
 
     ESP_ERROR_CHECK(ledc_set_duty(LEDC_MODE, LEDC_CHANNEL, LEDC_DUTY));
-    ESP_LOGI(AI_LOG_TAG, "Enabled PWM on Enable A and B pins with duty cycle %.2f percentage", (LEDC_DUTY/(1 << 8)) * 100.0);
+    ESP_LOGI(AI_LOG_TAG, "Enabled PWM on Enable A and B pins with duty cycle %d percentage", 100);
 
     init_servo();
 

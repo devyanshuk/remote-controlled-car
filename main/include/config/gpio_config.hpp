@@ -1,23 +1,17 @@
-#ifndef __RC_CAR_CONSTANTS__
-#define __RC_CAR_CONSTANTS__
+#pragma once
 
-#include "driver/gpio.h"
-
-// pins connected to L298N
+#include <driver/gpio.h>
 
 constexpr gpio_num_t ENABLE_MOTOR_A     = GPIO_NUM_14;
-
 constexpr gpio_num_t MOTOR_1_PIN        = GPIO_NUM_27;
-
 constexpr gpio_num_t MOTOR_2_PIN        = GPIO_NUM_26;
-
 constexpr gpio_num_t MOTOR_3_PIN        = GPIO_NUM_25;
-
 constexpr gpio_num_t MOTOR_4_PIN        = GPIO_NUM_33;
-
 constexpr gpio_num_t ENABLE_MOTOR_B     = GPIO_NUM_32;
 
-// pins connected to the servo motor
+
+
+// ------ pins connected to the servo motor -----
 
 /*
 * The servo motor is powered up using the +5V output pin
@@ -26,7 +20,8 @@ constexpr gpio_num_t ENABLE_MOTOR_B     = GPIO_NUM_32;
 constexpr gpio_num_t SERVO_MOTOR_PIN    = GPIO_NUM_4;
 
 
-// pins connected to the ultrasonic sensor
+
+// ----- pins connected to the ultrasonic sensor -----
 
 /*
 * The ultrasonic sensor is powered up using the 5V pin of the
@@ -46,16 +41,4 @@ constexpr gpio_num_t SERVO_MOTOR_PIN    = GPIO_NUM_4;
 
 */
 constexpr gpio_num_t ULTRA_ECHO_PIN = GPIO_NUM_13;
-
 constexpr gpio_num_t ULTRA_TRIG_PIN = GPIO_NUM_12; 
-
-
-
-// wifi credentials
-#define WIFI_SSID "Remote-controlled-car"
-
-// file partition root
-#define SPIFFS_ROOT "/UI"
-
-
-#endif

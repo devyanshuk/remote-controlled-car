@@ -5,7 +5,7 @@
 #include <driver/gpio.h>
 #include <chrono>
 
-#include "constants.h"
+#include "config/gpio_config.hpp"
 
 uint64_t    micros();
 double      get_obstacle_distance_cm(void);

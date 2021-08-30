@@ -15,7 +15,7 @@
 #include <tcpip_adapter.h>
 
 #include "server.hpp"
-#include "constants.h"
+#include "config/wifi_config.hpp"
 
 esp_err_t           init_access_point               (void);
 httpd_handle_t      start_webserver                 (void);

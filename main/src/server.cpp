@@ -10,6 +10,7 @@ void start_server() {
     httpd_config_t httpServerConfiguration = HTTPD_DEFAULT_CONFIG();
     httpServerConfiguration.lru_purge_enable = true;
     httpServerConfiguration.uri_match_fn = httpd_uri_match_wildcard;
+    
     if(httpd_start(&http_server_instance, &httpServerConfiguration) != ESP_OK){
         ESP_LOGW(TAG, "Could not start http server");
     }

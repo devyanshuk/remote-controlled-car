@@ -56,7 +56,6 @@ void autonomous_movement_logic(void* param) {
             }
         }
         else {
-            ESP_LOGW(TAG, "GOING FORWARD");
             Driver::forward();
         }
         servo_turn_middle();
@@ -75,5 +74,7 @@ void stop_autonomous_movement(void) {
     if (autonomous_task_handler != NULL) {
         vTaskDelete(autonomous_task_handler);
     }
+
+    Driver::stop();
 
 }

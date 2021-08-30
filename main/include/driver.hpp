@@ -3,8 +3,8 @@
 #include "esp_log.h"
 #include "driver/gpio.h"
 
-#include "constants.h"
 #include "errormacros.hpp"
+#include "config/gpio_config.hpp"
 
 class Driver final {
 

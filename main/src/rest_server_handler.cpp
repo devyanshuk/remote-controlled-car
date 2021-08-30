@@ -1,15 +1,6 @@
 #include "../include/rest_server_handler.hpp"
 
 #define TAG                     "Rest server handler"
-#define FILE_BUF_SIZE           256
-#define FORWARD_URI             "/Forward"
-#define ROOT_URI                "/*"
-#define PWM_URI                 "/PWM/*"
-#define BACKWARD_URI            "/Backward"
-#define CLOCKWISE_URI           "/Clockwise"
-#define COUNTERCLOCKWISE_URI    "/Counterclockwise"
-#define STOP_URI                "/Stop"
-#define NULL_CTX                (void*)0
 
 #define SEND_OK(req) do { \
     std::stringstream message; \
@@ -20,6 +11,14 @@
 } while(0) \
 
 #define CHECK_FILE_EXTENSION(str, ext) (str.substr(str.find_last_of(".") + 1) == ext)
+
+template<typename T>
+std::string toString(T val)
+{
+    std::stringstream ss("");
+    ss << val;
+    return ss.str();
+}
 
 void register_callbacks(httpd_handle_t * server) {
 
@@ -80,21 +79,30 @@ void register_callbacks(httpd_handle_t * server) {
             .user_ctx = NULL_CTX
         };
 
+    httpd_uri_t autodrive =
+        {
+            .uri = AUTO_DRIVE_URI,
+            .method = HTTP_POST,
+            .handler = autodrive_handler,
+            .user_ctx = NULL_CTX
+        };
+
     httpd_register_uri_handler(*server, &root);
-    ESP_LOGI(TAG, "Registered /* uri handler");
+    ESP_LOGI(TAG, "Registered %s uri handler", ROOT_URI);
     httpd_register_uri_handler(*server, &pwm);
-    ESP_LOGI(TAG, "Registered /PWM/* uri handler");
+    ESP_LOGI(TAG, "Registered %s uri handler", PWM_URI);
     httpd_register_uri_handler(*server, &straight);
-    ESP_LOGI(TAG, "Registered /forward uri handler");
+    ESP_LOGI(TAG, "Registered %s uri handler", FORWARD_URI);
     httpd_register_uri_handler(*server, &back);
-    ESP_LOGI(TAG, "Registered /forward uri handler");
+    ESP_LOGI(TAG, "Registered %s uri handler", BACKWARD_URI);
     httpd_register_uri_handler(*server, &left);
-    ESP_LOGI(TAG, "Registered /counterclockwise uri handler");
+    ESP_LOGI(TAG, "Registered %s uri handler", COUNTERCLOCKWISE_URI);
     httpd_register_uri_handler(*server, &right);
-    ESP_LOGI(TAG, "Registered /clockwise uri handler");
+    ESP_LOGI(TAG, "Registered %s uri handler", CLOCKWISE_URI);
     httpd_register_uri_handler(*server, &stop);
-    ESP_LOGI(TAG, "Registered /stop uri handler");
-    
+    ESP_LOGI(TAG, "Registered %s uri handler", STOP_URI);
+    httpd_register_uri_handler(*server, &autodrive);
+    ESP_LOGI(TAG, "Registered %s uri handler", AUTO_DRIVE_URI);
 }
 
 esp_err_t right_handler(httpd_req_t *req) {
@@ -141,17 +149,17 @@ esp_err_t set_content_type_from_file(httpd_req_t *req, std::string filepath)
 
 
 esp_err_t pwm_handler(httpd_req_t * req) {
-    ESP_LOGI(TAG, "URI %s was hit", req->uri);
+    ESP_LOGI(TAG, "uri %s was hit", req->uri);
 
     std::string str(req->uri);
-
-    // Parse: /PWM/integer -> integer
     size_t i = 0;
-    for ( ; i < str.length() && !isdigit(str[i]) ; i++ );
+    
+    // Parse: /PWM/integer -> integer
+    for ( ; i < str.length() && !isdigit(str[i]); i++ );
     str = str.substr(i, str.length() - i );
     int pwm_val = atoi(str.c_str());
 
-    ESP_LOGI(TAG, "got duty cycle value : %d", pwm_val);
+    ESP_LOGI(TAG, "got pwm value : %d", pwm_val);
 
     // set new duty cycle
     float duty_cycle_percentage = (pwm_val / 255.0) * 100.0;
@@ -166,14 +174,18 @@ esp_err_t pwm_handler(httpd_req_t * req) {
 
 esp_err_t root_handler(httpd_req_t *req)
 {
-    ESP_LOGI(TAG, "url %s was hit", req->uri);
+    if (strcmp(req->uri, DISTANCE_URI) == 0) {
+        return distance_handler(req);
+    }
+
+    ESP_LOGI(TAG, "uri %s was hit", req->uri);
 
     std::string file_path(SPIFFS_ROOT);
 
     ESP_LOGI(TAG, "Base path = %s", file_path.c_str());
 
     if (req->uri[strlen(req->uri) - 1] == '/') {
-        file_path += "/index.html";
+        file_path += INDEX_HTML;
     } else {
         file_path += req->uri;
     }
@@ -181,7 +193,9 @@ esp_err_t root_handler(httpd_req_t *req)
     ESP_LOGI(TAG, "file path = %s", file_path.c_str());
 
     set_content_type_from_file(req, file_path);
+
     char lineRead[FILE_BUF_SIZE];
+    
     FILE *file = fopen(file_path.c_str(), "r");
     while (fgets(lineRead, sizeof(lineRead), file))
     {
@@ -192,4 +206,26 @@ esp_err_t root_handler(httpd_req_t *req)
 
     fclose(file);
     return ESP_OK;
+}
+
+esp_err_t distance_handler(httpd_req_t * req) {
+    ESP_LOGI(TAG, "uri %s was hit", req->uri);
+    httpd_resp_sendstr_chunk(req, toString<double>(get_obstacle_distance_cm()).c_str());
+    httpd_resp_sendstr_chunk(req, NULL);
+    return ESP_OK;
+}
+
+esp_err_t autodrive_handler(httpd_req_t * req) {
+    ESP_LOGI(TAG, "uri %s was hit", req->uri);
+
+    //Parse /Autonomous/bool -> bool
+    char *ptr = strrchr(req->uri, '/');
+    if (strcmp(ptr + 1, "true") == 0) {
+        start_autonomous_movement();
+    }
+    else {
+        stop_autonomous_movement();
+    }
+
+    SEND_OK(req);
 }

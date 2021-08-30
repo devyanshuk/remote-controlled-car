@@ -33,6 +33,8 @@ void init_servo(void) {
     mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_0, &pwm_config);
 
     servo_turn_middle();
+
+    ESP_LOGI(TAG, "Servo initialized (pin number %d) and is currently at 0 degrees", SERVO_MOTOR_PIN);
 }
 
 

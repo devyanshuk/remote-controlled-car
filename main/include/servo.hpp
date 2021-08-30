@@ -5,7 +5,7 @@
 #include <esp_log.h>
 #include <driver/mcpwm.h>
 
-#include "constants.h"
+#include "config/gpio_config.hpp"
 
 static inline
 uint32_t        convert_servo_angle_to_duty_us(int angle);
