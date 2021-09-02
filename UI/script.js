@@ -1,14 +1,5 @@
 var button_being_pressed = false;
 
-window.addEventListener("deviceorientation", (event) => {
-    var absolute = event.absolute;
-    var alpha    = event.alpha;
-    var beta     = event.beta;
-    var gamma    = event.gamma;
-    
-    
-});
-
 document.addEventListener("keydown", (e) => {
     var success = true;
 
@@ -143,10 +134,20 @@ function onDownMouseDown() {
 function send_pwm() {
     var pwm_value = document.getElementById("pwm").value;
     console.log("sending pwm value:" + pwm_value);
-     fetch("PWM/" + pwm_value,
-                {
-                    method: "POST"
-                });
+    fetch("PWM/" + pwm_value,
+            {
+                method: "POST"
+            });
+}
+
+function send_servo_val() {
+    var servo_value = document.getElementById("servo").value;
+    document.querySelector(".names .SERVO").innerHTML = "Servo (" + servo_value + ")&#176;";
+    console.log("sending servo value:" + servo_value);
+    fetch("Servo/" + servo_value,
+            {
+                method: "POST"
+            });
 }
 
 function auto_drive() {
@@ -156,14 +157,26 @@ function auto_drive() {
             });
 }
 
+function wall_follow() {
+    fetch("WallFollow/" + (document.getElementById("togBtn3").checked).toString(),
+            {
+                method: "POST"
+            });
+}
 
+
+//'{"servo":"servo_val", "pwm":"pwm_val", "auto_drive":"bool", "wall_follow":"bool", "distance":"dist_val"}'
 setInterval(function ( ) {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
-      document.querySelector(".names .distance").innerHTML = "Obstacle distance: " + this.responseText + " cm";
+        console.log(this.responseText);
+      var obj = JSON.parse(this.responseText);
+      document.getElementById("togBtn").checked = JSON.parse(obj.auto_drive);
+      document.getElementById("togBtn3").checked = JSON.parse(obj.wall_follow);
+      document.querySelector(".names .distance").innerHTML = "Obstacle distance: " + obj.distance + " cm";
     }
   };
-  xhttp.open("GET", "/Distance", true);
+  xhttp.open("GET", "/Updates", true);
   xhttp.send();
 }, 1000 ) ;

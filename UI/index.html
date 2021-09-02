@@ -40,6 +40,18 @@
 <br />
 <br />
 <div class="names">
+    <div class="SERVO">Servo (0&#176;)</div>
+</div>
+<br />
+<br />
+<div>
+    <input type="range" id="servo" min="-180" max="180" value="0">
+    <button onmousedown="send_servo_val()" ontouchstart="send_servo_val()">Udate servo</button>
+</div>
+<br />
+<br />
+<br />
+<div class="names">
     <div class="PWM">Auto-Drive</div>
 </div>
 <label class="switch">
@@ -52,9 +64,10 @@
     <div class="PWM">Wall-follow</div>
 </div>
 <label class="switch">
-    <input type="checkbox" id="togBtn3">
+    <input type="checkbox" id="togBtn3" onclick="wall_follow()">
     <div class="slider round"></div>
 </label>
+<br />
 <br />
 <br />
 <div class="names">

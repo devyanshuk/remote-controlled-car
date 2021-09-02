@@ -1,10 +1,10 @@
 #include "../include/rest_server_handler.hpp"
 
-#define TAG                     "Rest server handler"
+#define TAG "Rest server handler"
 
 #define SEND_OK(req) do { \
     std::stringstream message; \
-    message << "{\"" << req->uri << "\": \"ok\"}"; \
+    message << "{\"" << req->uri << "\": \"completed\"}"; \
     std::string m = message.str(); \
     httpd_resp_send(req, m.c_str(), m.length()); \
     return ESP_OK; \
@@ -12,10 +12,15 @@
 
 #define CHECK_FILE_EXTENSION(str, ext) (str.substr(str.find_last_of(".") + 1) == ext)
 
+esp_err_t   set_content_type_from_file  (httpd_req_t *req, std::string filepath);
+int         get_integer_value_from_uri  (const char* uri);
+
+robot_config_t robot_config;
+
 template<typename T>
 std::string toString(T val)
 {
-    std::stringstream ss("");
+    std::stringstream ss;
     ss << val;
     return ss.str();
 }
@@ -87,6 +92,22 @@ void register_callbacks(httpd_handle_t * server) {
             .user_ctx = NULL_CTX
         };
 
+    httpd_uri_t wall_follow =
+        {
+            .uri = WALL_FOLLOW_URI,
+            .method = HTTP_POST,
+            .handler = wall_follow_handler,
+            .user_ctx = NULL_CTX
+        };
+
+    httpd_uri_t servo =
+        {
+            .uri = SERVO_URI,
+            .method = HTTP_POST,
+            .handler = servo_handler,
+            .user_ctx = NULL_CTX
+        };
+
     httpd_register_uri_handler(*server, &root);
     ESP_LOGI(TAG, "Registered %s uri handler", ROOT_URI);
     httpd_register_uri_handler(*server, &pwm);
@@ -103,61 +124,81 @@ void register_callbacks(httpd_handle_t * server) {
     ESP_LOGI(TAG, "Registered %s uri handler", STOP_URI);
     httpd_register_uri_handler(*server, &autodrive);
     ESP_LOGI(TAG, "Registered %s uri handler", AUTO_DRIVE_URI);
+    httpd_register_uri_handler(*server, &servo);
+    ESP_LOGI(TAG, "Registered %s uri handler", SERVO_URI);
+    httpd_register_uri_handler(*server, &wall_follow);
+    ESP_LOGI(TAG, "Registered %s uri handler", WALL_FOLLOW_URI);
+}
+
+void set_config_to_manual(robot_config_t * config) {
+    config->config_type = CONFIG_MANUAL;
+    stop_autonomous_movement();
+    stop_wall_follow();
 }
 
 esp_err_t right_handler(httpd_req_t *req) {
+    set_config_to_manual(&robot_config);
     Driver::clockwise();
     SEND_OK(req);
 }
 
 esp_err_t left_handler(httpd_req_t *req) {
+    set_config_to_manual(&robot_config);
     Driver::counterclockwise();
     SEND_OK(req);
 }
 
 esp_err_t stop_handler(httpd_req_t *req) {
+    set_config_to_manual(&robot_config);
     Driver::stop();
     SEND_OK(req);
 }
 
 esp_err_t forward_handler(httpd_req_t *req) {
+    set_config_to_manual(&robot_config);
     Driver::forward();
     SEND_OK(req);
 }
 
 esp_err_t backward_handler(httpd_req_t *req) {
+    set_config_to_manual(&robot_config);
     Driver::backward();
     SEND_OK(req);
 }
 
 esp_err_t set_content_type_from_file(httpd_req_t *req, std::string filepath)
 {
-    const char *type = "text/plain";
-    if (CHECK_FILE_EXTENSION(filepath, "html")) {
-        type = "text/html";
+    const char *type = TEXT_PLAIN;
+    if (CHECK_FILE_EXTENSION(filepath, HTML)) {
+        type = TEXT_HTML;
     }
-    else if (CHECK_FILE_EXTENSION(filepath, "js")) {
-        type = "application/javascript";
+    else if (CHECK_FILE_EXTENSION(filepath, JS)) {
+        type = APPLICATION_JAVASCRIPT;
     }
-    else if (CHECK_FILE_EXTENSION(filepath, "css")) {
-        type = "text/css";
+    else if (CHECK_FILE_EXTENSION(filepath, CSS)) {
+        type = TEXT_CSS;
     }
     ESP_LOGI(TAG, "type %s returned", type);
 
     return httpd_resp_set_type(req, type);
 }
 
+int get_integer_value_from_uri(const char* uri) {
+    std::string str(uri);
+    size_t i = 0;
+    
+    // Parse: /String/integer -> integer
+    for ( ; i < str.length() && (str[i] != '-' && !isdigit(str[i])); i++ );
+    str = str.substr(i, str.length() - i );
+    ESP_LOGI(TAG, "str value = %s", str.c_str());
+    return atoi(str.c_str());
+}
+
 
 esp_err_t pwm_handler(httpd_req_t * req) {
     ESP_LOGI(TAG, "uri %s was hit", req->uri);
 
-    std::string str(req->uri);
-    size_t i = 0;
-    
-    // Parse: /PWM/integer -> integer
-    for ( ; i < str.length() && !isdigit(str[i]); i++ );
-    str = str.substr(i, str.length() - i );
-    int pwm_val = atoi(str.c_str());
+    int pwm_val = get_integer_value_from_uri(req->uri);
 
     ESP_LOGI(TAG, "got pwm value : %d", pwm_val);
 
@@ -166,7 +207,23 @@ esp_err_t pwm_handler(httpd_req_t * req) {
     ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, pwm_val);
     ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
 
+    robot_config.current_duty_cycle = pwm_val;
+
     ESP_LOGI(TAG, "changed duty cycle to %.2f percent", duty_cycle_percentage );
+
+    SEND_OK(req);
+}
+
+esp_err_t servo_handler(httpd_req_t * req) {
+    ESP_LOGI(TAG, "uri %s was hit", req->uri);
+
+    int servo_val = get_integer_value_from_uri(req->uri);
+
+    ESP_LOGI(TAG, "got servo value : %d", servo_val);
+
+    custom_turn(servo_val);
+
+    robot_config.current_servo_angle = servo_val;
 
     SEND_OK(req);
 }
@@ -174,8 +231,8 @@ esp_err_t pwm_handler(httpd_req_t * req) {
 
 esp_err_t root_handler(httpd_req_t *req)
 {
-    if (strcmp(req->uri, DISTANCE_URI) == 0) {
-        return distance_handler(req);
+    if (strcmp(req->uri, UPDATE_URI) == 0) {
+        return update_handler(req);
     }
 
     ESP_LOGI(TAG, "uri %s was hit", req->uri);
@@ -208,9 +265,16 @@ esp_err_t root_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-esp_err_t distance_handler(httpd_req_t * req) {
-    ESP_LOGI(TAG, "uri %s was hit", req->uri);
-    httpd_resp_sendstr_chunk(req, toString<double>(get_obstacle_distance_cm()).c_str());
+
+esp_err_t update_handler(httpd_req_t * req) {
+    bool auto_drive = robot_config.config_type == CONFIG_OBSTACLE_AVOIDANCE;
+    bool wall_follow = robot_config.config_type == CONFIG_WALL_FOLLOW;
+    std::stringstream outputJson;
+    outputJson  << "{\"auto_drive\":\"" << toString<bool>(auto_drive) << "\","
+                << "\"wall_follow\":\"" << toString<bool>(wall_follow) << "\","
+                << "\"distance\":\"" << toString<double>(get_obstacle_distance_cm()) << "\"}";
+
+    httpd_resp_sendstr_chunk(req, outputJson.str().c_str());
     httpd_resp_sendstr_chunk(req, NULL);
     return ESP_OK;
 }
@@ -221,10 +285,29 @@ esp_err_t autodrive_handler(httpd_req_t * req) {
     //Parse /Autonomous/bool -> bool
     char *ptr = strrchr(req->uri, '/');
     if (strcmp(ptr + 1, "true") == 0) {
+        robot_config.config_type = CONFIG_OBSTACLE_AVOIDANCE;
         start_autonomous_movement();
     }
     else {
+        robot_config.config_type = CONFIG_MANUAL;
         stop_autonomous_movement();
+    }
+
+    SEND_OK(req);
+}
+
+esp_err_t wall_follow_handler(httpd_req_t * req) {
+    ESP_LOGI(TAG, "uri %s was hit", req->uri);
+
+    //Parse /Autonomous/bool -> bool
+    char *ptr = strrchr(req->uri, '/');
+    if (strcmp(ptr + 1, "true") == 0) {
+        robot_config.config_type = CONFIG_WALL_FOLLOW;
+        start_wall_follow();
+    }
+    else {
+        robot_config.config_type = CONFIG_MANUAL;
+        stop_wall_follow();
     }
 
     SEND_OK(req);

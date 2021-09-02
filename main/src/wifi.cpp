@@ -27,6 +27,8 @@ void connect_wifi(void) {
         SOFT_AP_NM_ADDRESS_2,
         SOFT_AP_NM_ADDRESS_3,
         SOFT_AP_NM_ADDRESS_4);
+        
+    // using custom IP address for the esp32
     ESP_ERROR_CHECK(tcpip_adapter_set_ip_info(TCPIP_ADAPTER_IF_AP, &ipAddressInfo));
     ESP_ERROR_CHECK(tcpip_adapter_dhcps_start(TCPIP_ADAPTER_IF_AP));
     ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
@@ -36,6 +38,7 @@ void connect_wifi(void) {
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
     ESP_ERROR_CHECK(esp_wifi_set_ps (WIFI_PS_NONE));
     
+    //access point configuration
     wifi_config_t ap_config = { };
     strcpy((char*)ap_config.ap.ssid, WIFI_SSID);
     ap_config.ap.authmode = WIFI_AUTH_OPEN;

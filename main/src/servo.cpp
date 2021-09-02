@@ -1,24 +1,26 @@
 #include "../include/servo.hpp"
 
 #define TAG                     "Servo"
-#define SERVO_MIN_PULSEWIDTH_US (1000)
-#define SERVO_MAX_PULSEWIDTH_US (2000)
-#define SERVO_MAX_DEGREE        (90)
-#define MOVEMENT_DELAY          pdMS_TO_TICKS(1000)
-#define SET_WHEELS(val)         ESP_ERROR_CHECK(mcpwm_set_duty_in_us(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A,\
-                                                convert_servo_angle_to_duty_us(val)))
+#define SET_WHEELS(val)         do { ESP_ERROR_CHECK(mcpwm_set_duty_in_us(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A,\
+                                                    convert_servo_angle_to_duty_us(val))); current_servo_pos = val; } while (0)
 
+
+int current_servo_pos;
 
 void servo_turn_left(void) {
-    SET_WHEELS(-SERVO_MAX_DEGREE);
+    SET_WHEELS(SERVO_MAX_DEGREE);
 }
 
 void servo_turn_right(void) {
-    SET_WHEELS(SERVO_MAX_DEGREE);
+    SET_WHEELS(-SERVO_MAX_DEGREE);
 }
 
 void servo_turn_middle(void) {
     SET_WHEELS(0);
+}
+
+void custom_turn(int angle) {
+    SET_WHEELS(angle);
 }
 
 void init_servo(void) {

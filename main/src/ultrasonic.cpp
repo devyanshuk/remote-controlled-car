@@ -2,11 +2,14 @@
 
 #define TAG "Ultrasonic"
 
+#define SOUND_SPEED_US      (0.03403) //~340.3 m/s
+#define MAX_LOOKOUT_TIME    (500*1000)
+
+using namespace std::chrono;
+
 uint64_t micros()
 {
-    uint64_t us = std::chrono::duration_cast<std::chrono::microseconds>
-                    (std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-    return us; 
+    return duration_cast<microseconds>(high_resolution_clock::now().time_since_epoch()).count(); 
 }
 
 double get_obstacle_distance_cm(void) {
@@ -16,18 +19,17 @@ double get_obstacle_distance_cm(void) {
 
         uint64_t startTime = micros();
 
-        while (gpio_get_level(ULTRA_ECHO_PIN) == 0 && (micros() - startTime) < 500 * 1000);
+        while (gpio_get_level(ULTRA_ECHO_PIN) == 0 && (micros() - startTime) < MAX_LOOKOUT_TIME);
 
         startTime = micros();
 
-        while (gpio_get_level(ULTRA_ECHO_PIN) == 1 && (micros() - startTime) < 500 * 1000);
+        while (gpio_get_level(ULTRA_ECHO_PIN) == 1 && (micros() - startTime) < MAX_LOOKOUT_TIME);
 
         if (gpio_get_level(ULTRA_ECHO_PIN) == 0) {
             uint64_t diff = micros() - startTime;
 
-            // Distance is TimeEchoInSeconds * SpeedOfSound / 2
-            double distance = 340.29 * diff / (1000 * 1000 * 2);
-            ESP_LOGI(TAG, "Distance is %f cm", distance * 100);
+            // distance = (time difference * sound speed) / 2 metres
+            double distance = (SOUND_SPEED_US * (diff/1000)) / 2;
             return distance * 100;
         }
         else {
