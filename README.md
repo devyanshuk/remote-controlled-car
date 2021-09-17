@@ -1,10 +1,10 @@
 #### ESP32 Remote controlled car
 
-![front](./pictures/front1.jpg)
+![front](./pictures/front1.jpeg)
 
-![front1](./pictures/front2.jpg)
+![front1](./pictures/front2.jpeg)
 
-![top](./pictures/top.jpg)
+![top](./pictures/top.jpeg)
 
 
 ## Setting up the ESP-32 WROOM32 board with ESP-IDF (Linux/MacOs)
